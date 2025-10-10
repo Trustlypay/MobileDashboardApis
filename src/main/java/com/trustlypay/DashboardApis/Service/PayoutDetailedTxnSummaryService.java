@@ -22,6 +22,8 @@ public class PayoutDetailedTxnSummaryService {
         int pageSize = (filterDto.getPageSize() != null) ? filterDto.getPageSize() : 10;
         int offset = (pageNumber - 1) * pageSize;
 
+
+
         List<String> allowedStatuses = Arrays.asList("SUCCESS", "PENDING", "FAILED");
         List<String> statusFilter = (filterDto.getTransactionStatus() != null)
                 ? filterDto.getTransactionStatus().stream()
@@ -69,6 +71,7 @@ public class PayoutDetailedTxnSummaryService {
                     .append(filterDto.getMerchantId().stream().map(id -> "?").collect(Collectors.joining(",")))
                     .append(") ");
             params.addAll(filterDto.getMerchantId());
+
         }
 
         sql.append(")");
