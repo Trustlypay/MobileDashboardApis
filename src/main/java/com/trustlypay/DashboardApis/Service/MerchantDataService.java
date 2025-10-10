@@ -55,6 +55,7 @@ public class MerchantDataService {
             long failedCount = rs.getLong("failed_count");
             long pendingCount = rs.getLong("pending_count");
 
+
             BigDecimal successAmount = rs.getBigDecimal("success_amount");
             BigDecimal failedAmount = rs.getBigDecimal("failed_amount");
             BigDecimal pendingAmount = rs.getBigDecimal("pending_amount");
@@ -73,6 +74,7 @@ public class MerchantDataService {
             summary.setSuccessCount(successCount);
             summary.setFailedCount(failedCount);
             summary.setPendingCount(pendingCount);
+            summary.setTotalCount(totalCount);
             summary.setSuccessAmount(successAmount);
             summary.setFailedAmount(failedAmount);
             summary.setPendingAmount(pendingAmount);
@@ -139,6 +141,7 @@ public class MerchantDataService {
             summary.setSuccessCount(successCount);
             summary.setFailedCount(failedCount);
             summary.setPendingCount(pendingCount);
+            summary.setTotalCount(totalCount);
             summary.setSuccessAmount(successAmount);
             summary.setFailedAmount(failedAmount);
             summary.setPendingAmount(pendingAmount);

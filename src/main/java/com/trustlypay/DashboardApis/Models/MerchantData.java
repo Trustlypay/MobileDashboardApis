@@ -11,6 +11,7 @@ public class MerchantData {
     private long successCount;
     private long failedCount;
     private long pendingCount;
+    private long totalCount;
 
     private BigDecimal successAmount;
     private BigDecimal failedAmount;
@@ -125,13 +126,22 @@ public class MerchantData {
         this.pendingPercentage = pendingPercentage;
     }
 
-    public MerchantData(String merchantName, String merchantGid, String vendorBank, long successCount, long failedCount, long pendingCount, BigDecimal successAmount, BigDecimal failedAmount, BigDecimal pendingAmount, BigDecimal totalAmount, double successPercentage, double failedPercentage, double pendingPercentage) {
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(long totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public MerchantData(String merchantName, String merchantGid, String vendorBank, long successCount, long failedCount, long pendingCount, long totalCount, BigDecimal successAmount, BigDecimal failedAmount, BigDecimal pendingAmount, BigDecimal totalAmount, double successPercentage, double failedPercentage, double pendingPercentage) {
         this.merchantName = merchantName;
         this.merchantGid = merchantGid;
         this.vendorBank = vendorBank;
         this.successCount = successCount;
         this.failedCount = failedCount;
         this.pendingCount = pendingCount;
+        this.totalCount = totalCount;
         this.successAmount = successAmount;
         this.failedAmount = failedAmount;
         this.pendingAmount = pendingAmount;
