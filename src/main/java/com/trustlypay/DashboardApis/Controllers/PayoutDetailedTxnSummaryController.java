@@ -52,13 +52,12 @@ public class PayoutDetailedTxnSummaryController {
             @RequestParam(required = false) String udf1,
 
             @Parameter(
-                    description = "Transaction Status (single or multiple: success, pending, failed)",
-                    example = "success,pending",
-                    schema = @Schema(type = "array", allowableValues = {"success", "pending", "failed"})
+
+                    schema = @Schema(type = "array", allowableValues = {"SUCCESS", "PENDING", "FAILED"})
             )
             @RequestParam(required = false) List<String> transactionStatus,
 
-            @Parameter(description = "Merchant IDs (single or multiple)", example = "1,2,12")
+            @Parameter()
             @RequestParam(required = false) List<Long> merchantId
     ) {
 
