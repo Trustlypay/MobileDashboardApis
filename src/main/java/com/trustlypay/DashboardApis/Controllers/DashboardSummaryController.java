@@ -16,6 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @Tag(name = "Dashboard Summary API", description = "Provides transaction summaries")
+@CrossOrigin(origins = "*")
 public class DashboardSummaryController {
 
     private final DasboardSummaryService dasboardSummaryService;

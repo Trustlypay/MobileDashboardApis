@@ -18,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/merchant")
+@CrossOrigin(origins = "*")
 public class PayinDetailedTxnSummaryController {
 
     private final PayinDetailedTxnSummaryService payinDetailedTxnSummaryService;
