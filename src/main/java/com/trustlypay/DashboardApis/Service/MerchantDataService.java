@@ -17,36 +17,40 @@ public class MerchantDataService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<MerchantData> getPayinMerchantsData() {
-
+    public List<MerchantData> getPayinMerchantsData(String fromDate, String toDate) {
         String sql = """
-             
-                
-                SELECT
+             SELECT
                         m.name AS merchant_name,
-                                m.merchant_gid,
-                                (SELECT vb.bank_name
-                        FROM vendor_bank vb
-                        JOIN live_payment lp2 ON lp2.vendor_id = vb.id
-                        WHERE lp2.created_merchant = m.id
-                        LIMIT 1) AS vendor_bank,
-                        SUM(CASE WHEN lp.transaction_status = 'success' THEN 1 ELSE 0 END) AS success_count,
-                        SUM(CASE WHEN lp.transaction_status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
-                        SUM(CASE WHEN lp.transaction_status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
-                        COALESCE(SUM(CASE WHEN lp.transaction_status = 'success' THEN lp.transaction_amount ELSE 0 END), 0) AS success_amount,
-                        COALESCE(SUM(CASE WHEN lp.transaction_status = 'failed' THEN lp.transaction_amount ELSE 0 END), 0) AS failed_amount,
-                        COALESCE(SUM(CASE WHEN lp.transaction_status = 'pending' THEN lp.transaction_amount ELSE 0 END), 0) AS pending_amount
-                        FROM merchant m
-                        LEFT JOIN live_payment lp ON m.id = lp.created_merchant
-                        GROUP BY m.id, m.name, m.merchant_gid;
+                        m.merchant_gid,
+                        vb.bank_name AS vendor_bank,  -- one row per vendor bank
+                        SUM(CASE WHEN t.transaction_status = 'success' THEN 1 ELSE 0 END) AS success_count,
+                        SUM(CASE WHEN t.transaction_status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+                        SUM(CASE WHEN t.transaction_status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+                        COALESCE(SUM(CASE WHEN t.transaction_status = 'success' THEN t.transaction_amount ELSE 0 END), 0) AS success_amount,
+                        COALESCE(SUM(CASE WHEN t.transaction_status = 'failed' THEN t.transaction_amount ELSE 0 END), 0) AS failed_amount,
+                        COALESCE(SUM(CASE WHEN t.transaction_status = 'pending' THEN t.transaction_amount ELSE 0 END), 0) AS pending_amount
+                    FROM merchant m
+                    LEFT JOIN (
+                        SELECT lp.created_merchant, lp.transaction_status, lp.transaction_amount, lp.vendor_id
+                        FROM live_payment lp
+                        WHERE lp.created_date BETWEEN ? AND ?\s
+                          AND lp.vendor_id IS NOT NULL AND lp.vendor_id != 0
+                        UNION ALL
+                        SELECT lpb.created_merchant, lpb.transaction_status, lpb.transaction_amount, lpb.vendor_id
+                        FROM live_payment_bkp lpb
+                        WHERE lpb.created_date BETWEEN ? AND ?\s
+                          AND lpb.vendor_id IS NOT NULL AND lpb.vendor_id != 0
+                    ) t ON m.id = t.created_merchant
+                    LEFT JOIN vendor_bank vb ON t.vendor_id = vb.id
+                    GROUP BY m.id, m.name, m.merchant_gid, vb.bank_name
+                    ORDER BY m.name ASC;
                 
                 
                 
-                
-                """;
+            """;
 
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, new Object[]{fromDate, toDate, fromDate, toDate}, (rs, rowNum) -> {
             long successCount = rs.getLong("success_count");
             long failedCount = rs.getLong("failed_count");
             long pendingCount = rs.getLong("pending_count");
@@ -83,29 +87,36 @@ public class MerchantDataService {
     }
 
 
-    public List<MerchantData> getPayoutMerchantsData() {
+    public List<MerchantData> getPayoutMerchantsData(String fromDate, String toDate) {
         String sql = """
-    SELECT
-        m.name AS merchant_name,
-        m.merchant_gid,
-        SUM(CASE WHEN pt.status = 'success' THEN 1 ELSE 0 END) AS success_count,
-        SUM(CASE WHEN pt.status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
-        SUM(CASE WHEN pt.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
-        COALESCE(SUM(CASE WHEN pt.status = 'success' THEN pt.amount ELSE 0 END), 0) AS success_amount,
-        COALESCE(SUM(CASE WHEN pt.status = 'failed' THEN pt.amount ELSE 0 END), 0) AS failed_amount,
-        COALESCE(SUM(CASE WHEN pt.status = 'pending' THEN pt.amount ELSE 0 END), 0) AS pending_amount,
-        COALESCE((
-            SELECT GROUP_CONCAT(DISTINCT vb.bank_name)
-            FROM payout_vendor_bank vb
-            JOIN payout_transactions pt2 ON pt2.vendor = vb.id
-            WHERE pt2.merchant_id = m.id
-        ), '') AS vendor_bank
-    FROM merchant m
-    LEFT JOIN payout_transactions pt ON m.id = pt.merchant_id
-    GROUP BY m.id, m.name, m.merchant_gid;
-""";
+        SELECT
+            m.name AS merchant_name,
+            m.merchant_gid,
+            vb.bank_name AS vendor_bank,  -- one row per vendor bank
+            SUM(CASE WHEN pt.status = 'success' THEN 1 ELSE 0 END) AS success_count,
+            SUM(CASE WHEN pt.status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+            SUM(CASE WHEN pt.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+            COALESCE(SUM(CASE WHEN pt.status = 'success' THEN pt.amount ELSE 0 END), 0) AS success_amount,
+            COALESCE(SUM(CASE WHEN pt.status = 'failed' THEN pt.amount ELSE 0 END), 0) AS failed_amount,
+            COALESCE(SUM(CASE WHEN pt.status = 'pending' THEN pt.amount ELSE 0 END), 0) AS pending_amount
+        FROM merchant m
+        LEFT JOIN (
+            SELECT * 
+            FROM payout_transactions
+            WHERE created_at BETWEEN ? AND ?
+              AND vendor IS NOT NULL AND vendor != 0
+            UNION ALL
+            SELECT * 
+            FROM payout_transactions_bkp
+            WHERE created_at BETWEEN ? AND ?
+              AND vendor IS NOT NULL AND vendor != 0
+        ) pt ON m.id = pt.merchant_id
+        LEFT JOIN payout_vendor_bank vb ON pt.vendor = vb.id
+        GROUP BY m.id, m.name, m.merchant_gid, vb.bank_name
+        ORDER BY m.name ASC;
+    """;
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, new Object[]{fromDate, toDate, fromDate, toDate}, (rs, rowNum) -> {
             long successCount = rs.getLong("success_count");
             long failedCount = rs.getLong("failed_count");
             long pendingCount = rs.getLong("pending_count");
@@ -138,7 +149,8 @@ public class MerchantDataService {
 
             return summary;
         });
+    }
 
 
-    }}
+}
 

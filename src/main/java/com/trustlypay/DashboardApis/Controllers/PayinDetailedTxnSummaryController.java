@@ -26,7 +26,7 @@ public class PayinDetailedTxnSummaryController {
         this.payinDetailedTxnSummaryService = payinDetailedTxnSummaryService;
     }
 
-    @GetMapping("/detailed-summary")
+    @GetMapping("/payin-detailed-summary")
     public ResponseEntity<Map<String, Object>> getPayinDetailedSummary(
 
             @Parameter(description = "Start date (YYYY-MM-DD HH:MM:SS)", example = "2025-07-01 00:00:00", required = true)
