@@ -45,9 +45,10 @@ public class PayinDetailedTxnSummaryService {
         sql.append("(")
                 .append("SELECT lp.transaction_date, lp.created_date, lp.transaction_username, ")
                 .append("lp.transaction_amount, lp.transaction_gid, lp.transaction_status, ")
-                .append("lp.bank_ref_no, lp.udf1, m.name AS merchant_name ")
+                .append("lp.bank_ref_no, lp.udf1, m.name AS merchant_name, vb.bank_name AS vendor_name ")
                 .append("FROM live_payment lp ")
                 .append("LEFT JOIN merchant m ON lp.created_merchant = m.id ")
+                .append("LEFT JOIN vendor_bank vb ON lp.vendor_id = vb.id ")
                 .append("WHERE lp.created_date BETWEEN ? AND ? ");
 
         params.add(filterDto.getFromDate());
@@ -87,9 +88,10 @@ public class PayinDetailedTxnSummaryService {
                 .append("(")
                 .append("SELECT lp.transaction_date, lp.created_date, lp.transaction_username, ")
                 .append("lp.transaction_amount, lp.transaction_gid, lp.transaction_status, ")
-                .append("lp.bank_ref_no, lp.udf1, m.name AS merchant_name ")
+                .append("lp.bank_ref_no, lp.udf1, m.name AS merchant_name, vb.bank_name AS vendor_name ")
                 .append("FROM live_payment_bkp lp ")
                 .append("LEFT JOIN merchant m ON lp.created_merchant = m.id ")
+                .append("LEFT JOIN vendor_bank vb ON lp.vendor_id = vb.id ")
                 .append("WHERE lp.created_date BETWEEN ? AND ? ");
 
         params.add(filterDto.getFromDate());

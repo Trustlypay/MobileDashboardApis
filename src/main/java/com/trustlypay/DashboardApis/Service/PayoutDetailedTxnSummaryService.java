@@ -37,9 +37,10 @@ public class PayoutDetailedTxnSummaryService {
         // 🔹 Main payout table
         sql.append("(")
                 .append("SELECT p.created_at, p.ben_name, p.amount, p.transfer_id, ")
-                .append("p.status, p.udf1, m.name AS merchant_name ")
+                .append("p.status, p.udf1, m.name AS merchant_name, vb.bank_name AS vendor_name ")
                 .append("FROM payout_transactions p ")
                 .append("LEFT JOIN merchant m ON p.merchant_id = m.id ")
+                .append("LEFT JOIN payout_vendor_bank vb ON p.vendor = vb.id ")
                 .append("WHERE p.created_at BETWEEN ? AND ? ");
         params.add(filterDto.getFromDate());
         params.add(filterDto.getToDate());
@@ -79,9 +80,10 @@ public class PayoutDetailedTxnSummaryService {
         // 🔹 Union with backup table (if you have payout_transactions_bkp)
         sql.append(" UNION ALL (")
                 .append("SELECT p.created_at, p.ben_name, p.amount, p.transfer_id, ")
-                .append("p.status, p.udf1, m.name AS merchant_name ")
+                .append("p.status, p.udf1, m.name AS merchant_name, vb.bank_name AS vendor_name ")
                 .append("FROM payout_transactions_bkp p ")
                 .append("LEFT JOIN merchant m ON p.merchant_id = m.id ")
+                .append("LEFT JOIN payout_vendor_bank vb ON p.vendor = vb.id ")
                 .append("WHERE p.created_at BETWEEN ? AND ? ");
         params.add(filterDto.getFromDate());
         params.add(filterDto.getToDate());
