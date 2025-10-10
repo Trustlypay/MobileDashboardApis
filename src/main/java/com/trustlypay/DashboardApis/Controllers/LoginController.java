@@ -7,15 +7,13 @@ import com.trustlypay.DashboardApis.Service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Tag(name = "Login Controller", description = "APIs for user login")
 @RestController
 @RequestMapping("/gateway")
+@CrossOrigin(origins = "*")
 public class LoginController {
    private LoginService loginService;
 

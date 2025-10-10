@@ -8,12 +8,10 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.trustlypay.DashboardApis.Models.PayinDetailedTxnsFilter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
+
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class PayinDetailedTxnSummaryService {
