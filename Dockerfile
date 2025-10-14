@@ -1,22 +1,21 @@
-# Use OpenJDK 17
-FROM eclipse-temurin:17-jdk
+# Use Java 21 JDK to compile
+FROM eclipse-temurin:21-jdk AS build
 
 WORKDIR /app
 
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw
+# Copy project files
+COPY . .
 
-COPY src ./src
-
-# Build
+# Build the project (skip tests if you want faster builds)
 RUN ./mvnw clean package -DskipTests
 
-# Copy jar
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+# Use a smaller JRE image for runtime
+FROM eclipse-temurin:21-jre
 
-EXPOSE 10000
+WORKDIR /app
 
-# Start (Render will set $PORT)
-CMD ["sh", "-c", "java -jar app.jar --server.port=${PORT:-10000}"]
+# Copy the jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Run the jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
